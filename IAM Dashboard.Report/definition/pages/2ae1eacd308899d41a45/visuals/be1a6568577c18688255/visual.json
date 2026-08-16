@@ -1,0 +1,59 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "be1a6568577c18688255",
+  "position": {
+    "x": 487.73265876714157,
+    "y": 55.215017973638666,
+    "z": 5000,
+    "height": 72.086273465583815,
+    "width": 144.17254693116763,
+    "tabOrder": 7000
+  },
+  "visual": {
+    "visualType": "slicer",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_iam_policy"
+                    }
+                  },
+                  "Property": "Internal Email"
+                }
+              },
+              "queryRef": "fact_iam_policy.External Domain",
+              "nativeQueryRef": "Internal Email",
+              "active": true
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "data": [
+        {
+          "properties": {
+            "mode": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Dropdown'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "general": [
+        {
+          "properties": {}
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

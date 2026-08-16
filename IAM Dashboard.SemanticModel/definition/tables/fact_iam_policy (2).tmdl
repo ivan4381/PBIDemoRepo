@@ -1,0 +1,228 @@
+table 'fact_iam_policy (2)'
+	lineageTag: e08b4487-64d2-43fc-ad1b-340ebde74f3c
+
+	column 'Project ID'
+		dataType: string
+		lineageTag: c19e3619-f61e-45a5-86fb-17c0835d50d1
+		summarizeBy: none
+		sourceColumn: Project ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Dataset Name'
+		dataType: string
+		lineageTag: 768590d8-4316-46c0-9188-119b8caa9e19
+		summarizeBy: none
+		sourceColumn: Dataset Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column role
+		dataType: string
+		lineageTag: e416089b-16f2-4b3f-bff6-042d7c24e15b
+		summarizeBy: none
+		sourceColumn: role
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Member Type'
+		dataType: string
+		lineageTag: 07f45011-f123-48dd-b526-41ceedd0099c
+		summarizeBy: none
+		sourceColumn: Member Type
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Member Email'
+		dataType: string
+		lineageTag: bbcffde1-208e-4432-8c25-2bd6bca9553a
+		summarizeBy: none
+		sourceColumn: Member Email
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Condition.title'
+		dataType: string
+		lineageTag: 20190bc2-28f7-4f6c-a2a1-059cca2ff2ca
+		summarizeBy: none
+		sourceColumn: Condition.title
+
+		annotation SummarizationSetBy = Automatic
+
+	column Attribute
+		dataType: string
+		lineageTag: ca1e90e6-320d-4f6d-8715-abc5bc4b5bd2
+		summarizeBy: none
+		sourceColumn: Attribute
+
+		annotation SummarizationSetBy = Automatic
+
+	column Value
+		dataType: string
+		lineageTag: 06831352-366a-4515-87c3-4bf88ad73902
+		summarizeBy: none
+		sourceColumn: Value
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'fact_iam_policy (2)' = m
+		mode: import
+		source = ```
+				let
+				    // Query ini membaca file kebijakan IAM (dataset_policy.json) dari Google Cloud/BigQuery,
+				    // mem-flatten struktur JSON bertingkat (policy > binding > condition), memisahkan
+				    // Project ID dan Dataset Name dari path resource, memecah kondisi IAM (Condition.expression)
+				    // menjadi 3 bagian (Expired Date, Type, Table/View Name), lalu meng-unpivot ketiga bagian
+				    // tersebut menjadi baris terpisah untuk analisis per-kondisi. Hasil akhir difilter hanya
+				    // baris yang memiliki Condition.title (kondisi IAM yang eksplisit diberi judul).
+				
+				    // Membaca dan mem-parsing file JSON kebijakan IAM dari path lokal
+				    // ⚠️ RISIKO: Path file di-hardcode ke lokasi OneDrive milik satu user — query akan gagal
+				    // total (file not found) jika dibuka oleh user lain atau di device lain
+				    Source = Json.Document(File.Contents("C:\Users\stefanus.aditya\OneDrive - PT Pertamina (Persero)\Data Management FIles\IAM Dashboard\ai_subtep_test.json")),
+				
+				    // Menggabungkan seluruh list di dalam struktur JSON menjadi satu list datar
+				    CombinedList = List.Combine(Source),
+				
+				    // Mengubah list hasil gabungan menjadi tabel dengan satu kolom
+				    // ⚠️ RISIKO: ExtraValues.Error berarti jika ada baris dengan struktur tidak konsisten,
+				    // query akan error keras (bukan silent) — ini sudah tepat untuk data governance, tapi
+				    // pastikan sumber data selalu konsisten strukturnya
+				    ConvertedToTable = Table.FromList(CombinedList, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+				
+				    // Membuka record "policy" menjadi kolom-kolom terpisah
+				    ExpandedColumn1 = Table.ExpandRecordColumn(ConvertedToTable, "Column1", {"policy"}, {"policy"}),
+				
+				    // Membuka record "policy" menjadi attachedResource dan binding
+				    ExpandedPolicy = Table.ExpandRecordColumn(ExpandedColumn1, "policy", {"attachedResource", "binding"}, {"attachedResource", "binding"}),
+				
+				    // Membuka record "binding" menjadi role, members, dan condition
+				    ExpandedBinding = Table.ExpandRecordColumn(ExpandedPolicy, "binding", {"role", "members", "condition"}, {"role", "members", "condition"}),
+				
+				    // Memecah list "members" menjadi satu baris per member
+				    // ⚠️ RISIKO: Jika satu binding punya banyak member, jumlah baris akan bertambah signifikan
+				    // (row explosion) — pastikan ini memang perilaku yang diinginkan
+				    ExpandedMembers = Table.ExpandListColumn(ExpandedBinding, "members"),
+				
+				    // Membuka record "condition" menjadi kolom expression dan title
+				    ExpandedCondition = Table.ExpandRecordColumn(ExpandedMembers, "condition", {"expression", "title"}, {"Condition.expression", "Condition.title"}),
+				
+				    // Mengambil teks path resource setelah kata kunci "/projects/"
+				    ExtractAfterProject = Table.AddColumn(ExpandedCondition, "RawPath", each Text.AfterDelimiter([attachedResource], "/projects/")),
+				
+				    // Mengambil Project ID dari path (bagian sebelum "/datasets/", atau seluruh path jika project-level)
+				    ExtractProjectID = Table.AddColumn(ExtractAfterProject, "Project ID", each Text.BeforeDelimiter([RawPath], "/datasets/", 0)),
+				
+				    // Mengambil Dataset Name jika path mengandung "/datasets/", jika tidak diberi label "N/A (Project Level)"
+				    ExtractDataset = Table.AddColumn(ExtractProjectID, "Dataset Name", each 
+				        if Text.Contains([RawPath], "/datasets/") 
+				        then Text.AfterDelimiter([RawPath], "/datasets/") 
+				        else "N/A (Project Level)"),
+				
+				    // Memisahkan tipe member (user/group/serviceAccount) dari bagian sebelum ":"
+				    SplitMemberType = Table.AddColumn(ExtractDataset, "Member Type", each Text.BeforeDelimiter([members], ":")),
+				
+				    // Mengambil email member dari bagian setelah ":"
+				    SplitMemberEmail = Table.AddColumn(SplitMemberType, "Member Email", each Text.AfterDelimiter([members], ":")),
+				
+				    // Memilih hanya kolom-kolom yang dibutuhkan untuk tahap berikutnya
+				    // ⚠️ RISIKO: Jika salah satu nama kolom berikut tidak tersedia di sumber, step ini akan gagal
+				    FinalTable = Table.SelectColumns(SplitMemberEmail,{"Project ID", "Dataset Name", "role", "Member Type", "Member Email", "Condition.title", "Condition.expression"}),
+				
+				    // Memisahkan baris Project Level (untuk proses dedup terpisah, karena Dataset Name selalu "N/A")
+				    Filter_ProjectLevelRows = Table.SelectRows(FinalTable, each ([Dataset Name] = "N/A (Project Level)")),
+				
+				    // Memisahkan baris Dataset Level (untuk proses dedup terpisah)
+				    Filter_DatasetLevelRows = Table.SelectRows(FinalTable, each [Dataset Name] <> "N/A (Project Level)"),
+				
+				    // Menghapus duplikat pada baris Project Level (kriteria: seluruh kolom kecuali Dataset Name yang sudah seragam)
+				    // ⚠️ RISIKO: Table.Distinct membandingkan seluruh kolom di tabel — jika kolom Condition.expression
+				    // berbeda redaksional tapi maknanya sama, baris akan dianggap unik (tidak ter-dedup)
+				    DedupProjectLevel = Table.Distinct(
+				        Filter_ProjectLevelRows
+				    ),
+				
+				    // Menghapus duplikat pada baris Dataset Level
+				    DedupDatasetLevel = Table.Distinct(
+				        Filter_DatasetLevelRows
+				    ),
+				
+				    // Menggabungkan kembali baris Project Level dan Dataset Level yang sudah di-dedup
+				    Result = Table.Combine({DedupProjectLevel, DedupDatasetLevel}),
+				
+				    // Membersihkan karakter non-printable dari kolom Condition.expression
+				    CleanedText = Table.TransformColumns(Result,{{"Condition.expression", Text.Clean, type text}}),
+				
+				    // Memecah Condition.expression menjadi 3 bagian berdasarkan delimiter "&&"
+				    // ⚠️ RISIKO: Jika ada Condition.expression yang mengandung lebih dari 3 klausa "&&",
+				    // bagian ke-4 dan seterusnya akan hilang (terpotong)
+				    SplitColumnByDelimiter1 = Table.SplitColumn(CleanedText, "Condition.expression", Splitter.SplitTextByDelimiter("&&", QuoteStyle.Csv), {"Condition.expression.1", "Condition.expression.2", "Condition.expression.3"}),
+				
+				    // Mengganti nilai null dengan placeholder "##NULL##" sebelum Unpivot
+				    // ⚠️ RISIKO: Table.UnpivotOtherColumns secara default membuang baris dengan Value = null.
+				    // Placeholder ini WAJIB ada supaya baris dengan kondisi yang tidak lengkap (misal hanya
+				    // punya 2 dari 3 klausa) tetap muncul di hasil akhir alih-alih hilang diam-diam
+				    ReplacedNullBeforeUnpivot = Table.ReplaceValue(
+				        SplitColumnByDelimiter1, 
+				        null, 
+				        "##NULL##", 
+				        Replacer.ReplaceValue, 
+				        {"Condition.expression.1", "Condition.expression.2", "Condition.expression.3"}
+				    ),
+				
+				    // Memberi nama yang deskriptif untuk ketiga bagian hasil split
+				    RenamedColumns1 = Table.RenameColumns(ReplacedNullBeforeUnpivot,{{"Condition.expression.1", "Expired Date"}, {"Condition.expression.2", "Type"}, {"Condition.expression.3", "Table/View Name"}}),
+				
+				    // Meng-unpivot kolom Expired Date, Type, dan Table/View Name menjadi baris (Attribute-Value)
+				    UnpivotedOtherColumns = Table.UnpivotOtherColumns(RenamedColumns1, {"Project ID", "Dataset Name", "role", "Member Type", "Member Email", "Condition.title"}, "Attribute", "Value"),
+				
+				    // Mengembalikan placeholder "##NULL##" menjadi null kembali agar data akurat merepresentasikan kondisi aslinya
+				    // ⚠️ RISIKO: Jika ada data asli yang kebetulan berisi teks literal "##NULL##", nilai tersebut
+				    // akan ikut terkonversi menjadi null (silent data change) — pastikan placeholder ini unik dan tidak bentrok
+				    ReplacedNullAfterUnpivot = Table.ReplaceValue(
+				        UnpivotedOtherColumns, 
+				        "##NULL##", 
+				        null, 
+				        Replacer.ReplaceValue, 
+				        {"Value"}
+				    ),
+				
+				    // Mengambil teks antara "." dan spasi dari Value — digunakan untuk mendeteksi kategori kondisi
+				    InsertedTextBetweenDelimiters = Table.AddColumn(ReplacedNullAfterUnpivot, "Text Between Delimiters", each Text.BetweenDelimiters([Value], ".", " "), type text),
+				
+				    // Mengambil teks antara "(" dan "T" dari Value — khusus untuk mengekstrak tanggal pada kondisi waktu
+				    InsertedTextBetweenDelimiters1 = Table.AddColumn(InsertedTextBetweenDelimiters, "Text Between Delimiters.1", each Text.BetweenDelimiters([Value], "(", "T"), type text),
+				
+				    // Memberi nama kolom kategori kondisi (time / name / lainnya)
+				    RenamedColumns = Table.RenameColumns(InsertedTextBetweenDelimiters1,{{"Text Between Delimiters", "Category"}}),
+				
+				    // Mengekstrak nilai akhir sesuai kategori: tanggal untuk "time", table untuk "name",
+				    // dan label "Table/View" untuk kategori lainnya
+				    AddedConditionalColumn = Table.AddColumn(
+				        RenamedColumns, 
+				        "Custom", 
+				        each 
+				            if [Category] = "time" then 
+				                Text.BetweenDelimiters([Value], "(", "T") 
+				            else if [Category] = "name" then
+				                    Text.AfterDelimiter([Value], "/tables/") 
+				            else "Table/View"
+				    ),
+				
+				    // Memilih kolom-kolom final yang relevan untuk output
+				    RemovedOtherColumns = Table.SelectColumns(AddedConditionalColumn,{"Project ID", "Dataset Name", "role", "Member Type", "Member Email", "Condition.title", "Attribute", "Custom"}),
+				
+				    // Menyaring hanya baris yang memiliki Condition.title (kondisi IAM yang eksplisit diberi judul)
+				    Filter_HasConditionTitle = Table.SelectRows(RemovedOtherColumns, each ([Condition.title] <> null)),
+				
+				    // Memberi nama akhir kolom "Custom" menjadi "Value" untuk output final
+				    RenamedColumns2 = Table.RenameColumns(Filter_HasConditionTitle,{{"Custom", "Value"}})
+				
+				in
+				    RenamedColumns2
+				```
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

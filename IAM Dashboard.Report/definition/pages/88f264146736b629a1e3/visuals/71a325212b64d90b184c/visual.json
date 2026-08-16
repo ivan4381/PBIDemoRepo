@@ -1,0 +1,85 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "71a325212b64d90b184c",
+  "position": {
+    "x": 575.6521739130435,
+    "y": 146.08695652173915,
+    "z": 7000,
+    "height": 66.08695652173914,
+    "width": 441.73913043478262,
+    "tabOrder": 6000
+  },
+  "visual": {
+    "visualType": "slicer",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_iam_policy"
+                    }
+                  },
+                  "Property": "Dataset Name"
+                }
+              },
+              "queryRef": "fact_iam_policy.Dataset Name",
+              "nativeQueryRef": "Dataset Name",
+              "active": true
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "data": [
+        {
+          "properties": {
+            "mode": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Dropdown'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "general": [
+        {
+          "properties": {
+            "selfFilterEnabled": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "e1e620b95d0a259d5420",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "fact_iam_policy"
+              }
+            },
+            "Property": "Dataset Name"
+          }
+        },
+        "type": "Categorical"
+      }
+    ]
+  }
+}

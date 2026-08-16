@@ -1,0 +1,91 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "abfbf79281cae47eea30",
+  "position": {
+    "x": 631.90520569830915,
+    "y": 56.748768472906406,
+    "z": 6000,
+    "height": 70.552522966316076,
+    "width": 196.32006390627083,
+    "tabOrder": 5000
+  },
+  "visual": {
+    "visualType": "textSearchSlicerF85E2E78BE4A4D7D9F99ED75B5D71C85",
+    "query": {
+      "queryState": {
+        "fields": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_iam_policy"
+                    }
+                  },
+                  "Property": "Member Email"
+                }
+              },
+              "queryRef": "fact_iam_policy.Member Email",
+              "nativeQueryRef": "Member Email"
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "general": [
+        {
+          "properties": {}
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "f80f9bf068d9923026be",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "fact_iam_policy"
+              }
+            },
+            "Property": "Member Email"
+          }
+        },
+        "type": "Categorical"
+      }
+    ]
+  }
+}

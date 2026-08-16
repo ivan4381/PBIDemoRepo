@@ -1,0 +1,126 @@
+table fact_iam_policy
+	lineageTag: fa957091-f112-40b2-b470-a5cc921ca3f0
+
+	column 'Project ID'
+		dataType: string
+		lineageTag: a343f9af-9c70-4a32-b94b-5cb91d43245a
+		summarizeBy: none
+		sourceColumn: Project ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Dataset Name'
+		dataType: string
+		lineageTag: 54137315-9df9-4201-853f-f00178cb5d19
+		summarizeBy: none
+		sourceColumn: Dataset Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column role
+		dataType: string
+		lineageTag: f17ea5dc-8728-492d-9bce-d6a630b187a6
+		summarizeBy: none
+		sourceColumn: role
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Member Type'
+		dataType: string
+		lineageTag: fb19551a-d8df-4523-b086-e35ded70d770
+		summarizeBy: none
+		sourceColumn: Member Type
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Member Email'
+		dataType: string
+		lineageTag: 5e09e020-cc04-4f8e-a127-8c4d48699cf4
+		summarizeBy: none
+		sourceColumn: Member Email
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Condition.title'
+		dataType: string
+		lineageTag: 4ae896a8-3532-4dd8-b7d3-b47bdc2e8639
+		summarizeBy: none
+		sourceColumn: Condition.title
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Condition.expression'
+		dataType: string
+		lineageTag: ee5eb7ff-957e-4888-b9af-a0352f10ad9d
+		summarizeBy: none
+		sourceColumn: Condition.expression
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Internal Email' = ```
+			
+			 INT (
+			    CONTAINSSTRING(fact_iam_policy[Member Email], "pertamina.com")
+			    )
+			```
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 9c257c81-910a-400c-a2ad-fd1aa1d44ac3
+		summarizeBy: none
+
+		changedProperty = DataType
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_iam_policy = m
+		mode: import
+		source = ```
+				let
+				    // 1. GANTI PATH INI SESUAI LOKASI FILE DATASET_POLICY.JSON ANDA
+				    Source = Json.Document(File.Contents("C:\Users\stefanus.aditya\OneDrive - PT Pertamina (Persero)\Data Management FIles\IAM Dashboard\all_projects_datasets_policy.json")),
+				    CombinedList = List.Combine(Source),
+				    ConvertedToTable = Table.FromList(CombinedList, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+				    ExpandedColumn1 = Table.ExpandRecordColumn(ConvertedToTable, "Column1", {"policy"}, {"policy"}),
+				    ExpandedPolicy = Table.ExpandRecordColumn(ExpandedColumn1, "policy", {"attachedResource", "binding"}, {"attachedResource", "binding"}),
+				    ExpandedBinding = Table.ExpandRecordColumn(ExpandedPolicy, "binding", {"role", "members", "condition"}, {"role", "members", "condition"}),
+				    ExpandedMembers = Table.ExpandListColumn(ExpandedBinding, "members"),
+				    ExpandedCondition = Table.ExpandRecordColumn(ExpandedMembers, "condition", {"expression", "title"}, {"Condition.expression", "Condition.title"}),
+				
+				    // 2. CLEANUP: Mengambil teks setelah "/projects/"
+				    ExtractAfterProject = Table.AddColumn(ExpandedCondition, "RawPath", each Text.AfterDelimiter([attachedResource], "/projects/")),
+				    
+				    // 3. BARU: Memisahkan Project ID dan Dataset (Jika ada)
+				    ExtractProjectID = Table.AddColumn(ExtractAfterProject, "Project ID", each Text.BeforeDelimiter([RawPath], "/datasets/", 0)),
+				    ExtractDataset = Table.AddColumn(ExtractProjectID, "Dataset Name", each 
+				        if Text.Contains([RawPath], "/datasets/") 
+				        then Text.AfterDelimiter([RawPath], "/datasets/") 
+				        else "N/A (Project Level)"),
+				
+				    SplitMemberType = Table.AddColumn(ExtractDataset, "Member Type", each Text.BeforeDelimiter([members], ":")),
+				    SplitMemberEmail = Table.AddColumn(SplitMemberType, "Member Email", each Text.AfterDelimiter([members], ":")),
+				
+				    // 4. Memilih kolom akhir, sekarang termasuk "Dataset Name"
+				    FinalTable = Table.SelectColumns(SplitMemberEmail,{"Project ID", "Dataset Name", "role", "Member Type", "Member Email", "Condition.title", "Condition.expression"}),
+				    // 6. Dedup khusus baris Project Level berdasarkan kombinasi Project ID + role + Member Type + Member Email
+				    //    (Dataset Name diabaikan dari kriteria karena nilainya selalu sama: "N/A")
+				    
+				    ProjectLevelRows = Table.SelectRows(FinalTable, each ([Dataset Name] = "N/A (Project Level)")),
+				    DatasetLevelRows = Table.SelectRows(FinalTable, each [Dataset Name] <> "N/A (Project Level)"),
+				    DedupProjectLevel = Table.Distinct(
+				        ProjectLevelRows
+				    ),
+				    DedupDatasetLevel = Table.Distinct(
+				        DatasetLevelRows
+				    ),
+				
+				    // 7. Gabungkan kembali baris yang sudah di-dedup
+				    Result = Table.Combine({DedupProjectLevel, DedupDatasetLevel}),
+				    #"Changed Type" = Table.TransformColumnTypes(Result,{{"Project ID", type text}, {"Dataset Name", type text}, {"role", type text}, {"Member Type", type text}, {"Member Email", type text}, {"Condition.title", type text}, {"Condition.expression", type text}})
+				in
+				    #"Changed Type"
+				```
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

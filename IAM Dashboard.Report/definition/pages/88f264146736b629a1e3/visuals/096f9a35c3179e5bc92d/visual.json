@@ -1,0 +1,294 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "096f9a35c3179e5bc92d",
+  "position": {
+    "x": 36.810011982425777,
+    "y": 211.65756889894823,
+    "z": 0,
+    "height": 671.78271867927049,
+    "width": 1519.9467447743311,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_iam_policy"
+                    }
+                  },
+                  "Property": "Project ID"
+                }
+              },
+              "queryRef": "fact_iam_policy.Project ID",
+              "nativeQueryRef": "Project ID"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_iam_policy"
+                    }
+                  },
+                  "Property": "role"
+                }
+              },
+              "queryRef": "fact_iam_policy.role",
+              "nativeQueryRef": "role"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_iam_policy"
+                    }
+                  },
+                  "Property": "Member Type"
+                }
+              },
+              "queryRef": "fact_iam_policy.Member Type",
+              "nativeQueryRef": "Member Type"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_iam_policy"
+                    }
+                  },
+                  "Property": "Member Email"
+                }
+              },
+              "queryRef": "fact_iam_policy.Member Email",
+              "nativeQueryRef": "Member Email"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_iam_policy"
+                    }
+                  },
+                  "Property": "Dataset Name"
+                }
+              },
+              "queryRef": "fact_iam_policy.Dataset Name",
+              "nativeQueryRef": "Dataset Name"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_iam_policy"
+                    }
+                  },
+                  "Property": "Condition.title"
+                }
+              },
+              "queryRef": "fact_iam_policy.Condition.title",
+              "nativeQueryRef": "Condition.title"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_iam_policy"
+                    }
+                  },
+                  "Property": "Condition.expression"
+                }
+              },
+              "queryRef": "fact_iam_policy.Condition.expression",
+              "nativeQueryRef": "Condition.expression"
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "columnWidth": [
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "252.06886233079638D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_iam_policy.Member Email"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "287.57892514082D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_iam_policy.Dataset Name"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "220D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_iam_policy.Project ID"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "251.0438024231128D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_iam_policy.role"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "114.73624847499693D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_iam_policy.Member Type"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "271D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_iam_policy.Condition.title"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "354D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_iam_policy.Condition.expression"
+          }
+        }
+      ],
+      "columnHeaders": [
+        {
+          "properties": {
+            "columnAdjustment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'fixedWidth'"
+                }
+              }
+            },
+            "defaultColumnWidth": {
+              "expr": {
+                "Literal": {
+                  "Value": "90D"
+                }
+              }
+            },
+            "bold": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "11D"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "visualTooltip": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "showSentenceFormat": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "sentenceTemplate": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{Condition.title} | {Condition.expression}'"
+                }
+              }
+            },
+            "showValuesInBold": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

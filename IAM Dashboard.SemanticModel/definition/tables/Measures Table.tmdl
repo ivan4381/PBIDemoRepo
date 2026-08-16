@@ -1,0 +1,27 @@
+table 'Measures Table'
+	lineageTag: 4b883255-aed3-48f6-b61b-b7fc3e122f36
+
+	measure 'Unique User' = DISTINCTCOUNT(fact_iam_policy[Member Email])
+		formatString: 0
+		lineageTag: 5f868866-2ed7-429f-b68d-90e5c6a9262a
+
+	column Column1
+		dataType: string
+		lineageTag: 5398e528-3108-4223-a0b5-11710d28af5a
+		summarizeBy: none
+		sourceColumn: Column1
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Measures Table' = m
+		mode: import
+		source =
+				let
+				  Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i45WKlaKjQUA", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [Column1 = _t])
+				in
+				  Source
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

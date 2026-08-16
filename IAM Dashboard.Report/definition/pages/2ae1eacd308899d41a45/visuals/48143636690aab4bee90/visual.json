@@ -1,0 +1,85 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "48143636690aab4bee90",
+  "position": {
+    "x": 242.33257888430305,
+    "y": 145.70629743043537,
+    "z": 4000,
+    "height": 65.951271468512857,
+    "width": 326.68885634402881,
+    "tabOrder": 4000
+  },
+  "visual": {
+    "visualType": "slicer",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_iam_policy (2)"
+                    }
+                  },
+                  "Property": "Project ID"
+                }
+              },
+              "queryRef": "fact_iam_policy (2).Project ID",
+              "nativeQueryRef": "Project ID1",
+              "active": true
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "data": [
+        {
+          "properties": {
+            "mode": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Dropdown'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "general": [
+        {
+          "properties": {
+            "selfFilterEnabled": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "6febd986128146b4112a",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "fact_iam_policy (2)"
+              }
+            },
+            "Property": "Project ID"
+          }
+        },
+        "type": "Categorical"
+      }
+    ]
+  }
+}
