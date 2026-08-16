@@ -5,6 +5,9 @@ table 'Measures Table'
 		formatString: 0
 		lineageTag: 5f868866-2ed7-429f-b68d-90e5c6a9262a
 
+	measure 'Test Measure' = "Ini untuk Test Dev di Github"
+		lineageTag: ce7b6275-f8a8-471e-873d-d9aa21219563
+
 	column Column1
 		dataType: string
 		lineageTag: 5398e528-3108-4223-a0b5-11710d28af5a
