@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
 Script untuk list semua Fabric Workspace yang accessible
-Menggunakan interactive login (browser-based authentication)
+Menggunakan Device Code Flow untuk interactive login (cocok untuk remote/headless environment)
 """
 
 import json
 import requests
-from azure.identity import InteractiveBrowserCredential
+from azure.identity import DeviceCodeCredential
 
 # Konfigurasi
 AUTHORITY_URL = "https://login.microsoftonline.com"
@@ -14,9 +14,11 @@ FABRIC_API_ENDPOINT = "https://api.fabric.microsoft.com/v1"
 SCOPE = "https://api.fabric.microsoft.com/.default"
 
 def get_access_token():
-    """Dapatkan access token menggunakan interactive browser login"""
-    print("🔐 Membuka browser untuk login interaktif...")
-    credential = InteractiveBrowserCredential()
+    """Dapatkan access token menggunakan Device Code Flow"""
+    print("\n🔐 Login dengan Device Code Flow...")
+    print("Silakan buka link yang akan ditampilkan dan ikuti instruksi di browser Anda.\n")
+
+    credential = DeviceCodeCredential()
     token = credential.get_token(SCOPE)
     return token.token
 
